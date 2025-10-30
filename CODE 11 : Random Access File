@@ -1,0 +1,185 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+
+const int TABLE_SIZE = 10;
+
+struct Model {
+    int modelID;
+    char modelName[30];
+    float accuracy;
+    char trainingDate[15];
+};
+
+// Hash function to calculate direct index
+int hashFunction(int id) {
+    return id % TABLE_SIZE;
+}
+
+// Initialize the file with empty records
+void initializeFile() {
+    fstream file("models.dat", ios::out | ios::binary);
+    if (!file) {
+        cout << "Error creating file.\n";
+        return;
+    }
+
+    Model blank = {-1, "", 0.0, ""};
+    for (int i = 0; i < TABLE_SIZE; i++)
+        file.write((char*)&blank, sizeof(Model));
+
+    file.close();
+    cout << "File initialized successfully.\n";
+}
+
+// Insert model using direct access file (with hashing + linear probing)
+void addModel(Model m) {
+    fstream file("models.dat", ios::in | ios::out | ios::binary);
+    if (!file) {
+        cout << "File not found. Initializing...\n";
+        initializeFile();
+        file.open("models.dat", ios::in | ios::out | ios::binary);
+        if (!file) return;
+    }
+
+    int pos = hashFunction(m.modelID);
+    Model temp;
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        int index = (pos + i) % TABLE_SIZE;  // linear probing
+        file.seekg(index * sizeof(Model), ios::beg);
+        file.read((char*)&temp, sizeof(Model));
+
+        // Empty slot found â†’ insert here
+        if (temp.modelID == -1) {
+            file.seekp(index * sizeof(Model), ios::beg);
+            file.write((char*)&m, sizeof(Model));
+            cout << "Model added successfully at index " << index << ".\n";
+            file.close();
+            return;
+        }
+    }
+
+    cout << "Error: Hash table is full.\n";
+    file.close();
+}
+
+// Search model by ID using random access
+void searchModel(int id) {
+    fstream file("models.dat", ios::in | ios::binary);
+    if (!file) {
+        cout << "File not found.\n";
+        return;
+    }
+
+    int pos = hashFunction(id);
+    Model temp;
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        int index = (pos + i) % TABLE_SIZE;
+        file.seekg(index * sizeof(Model), ios::beg);
+        file.read((char*)&temp, sizeof(Model));
+
+        if (temp.modelID == id) {
+            cout << "\nModel Found at index " << index << ":\n";
+            cout << "Model ID: " << temp.modelID << endl;
+            cout << "Model Name: " << temp.modelName << endl;
+            cout << "Accuracy: " << temp.accuracy << endl;
+            cout << "Training Date: " << temp.trainingDate << endl;
+            file.close();
+            return;
+        }
+    }
+
+    cout << "Model not found.\n";
+    file.close();
+}
+
+// Display all records
+void displayAll() {
+    fstream file("models.dat", ios::in | ios::binary);
+    if (!file) {
+        cout << "File not found.\n";
+        return;
+    }
+
+    Model temp;
+    cout << "\n--- All Models (Direct Access File) ---\n";
+    cout << "Index\tModelID\tName\tAccuracy\tDate\n";
+
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        file.seekg(i * sizeof(Model), ios::beg);
+        file.read((char*)&temp, sizeof(Model));
+        if (temp.modelID != -1) {
+            cout << i << "\t" << temp.modelID << "\t"
+                 << temp.modelName << "\t"
+                 << temp.accuracy << "\t\t"
+                 << temp.trainingDate << endl;
+        } else {
+            cout << i << "\t[Empty]\n";
+        }
+    }
+
+    file.close();
+}
+
+int main() {
+    int choice;
+    Model m;
+
+    fstream test("models.dat", ios::in | ios::binary);
+    if (!test) initializeFile();
+    test.close();
+
+    do {
+        cout << "\n===== AI Model Registry System =====";
+        cout << "\n1. Add Model";
+        cout << "\n2. Search Model by ID";
+        cout << "\n3. Display All Models";
+        cout << "\n4. Exit";
+        cout << "\nEnter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            cout << "Enter Model ID: ";
+            cin >> m.modelID;
+            cin.ignore();
+
+            cout << "Enter Model Name: ";
+            cin.getline(m.modelName, 30);
+
+            cout << "Enter Accuracy: ";
+            cin >> m.accuracy;
+            cin.ignore();
+
+            cout << "Enter Training Date (DD-MM-YYYY): ";
+            cin.getline(m.trainingDate, 15);
+
+            addModel(m);
+            break;
+
+        case 2: {
+            int id;
+            cout << "Enter Model ID to search: ";
+            cin >> id;
+            searchModel(id);
+            break;
+        }
+
+        case 3:
+            displayAll();
+            break;
+
+        case 4:
+            cout << "Exiting...\n";
+            break;
+
+        default:
+            cout << "Invalid choice!\n";
+        }
+    } while (choice != 4);
+
+    return 0;
+}
