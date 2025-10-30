@@ -1,0 +1,151 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Patient {
+    int patientID;
+    string name;
+    int age;
+    string medicalHistory;
+    Patient* left;
+    Patient* right;
+};
+
+Patient* createNode(int id, string name, int age, string history) {
+    Patient* newNode = new Patient();
+    newNode->patientID = id;
+    newNode->name = name;
+    newNode->age = age;
+    newNode->medicalHistory = history;
+    newNode->left = newNode->right = nullptr;
+    return newNode;
+}
+
+Patient* insert(Patient* root, int id, string name, int age, string history) {
+    if (root == nullptr) return createNode(id, name, age, history);
+
+    if (id < root->patientID)
+        root->left = insert(root->left, id, name, age, history);
+    else if (id > root->patientID)
+        root->right = insert(root->right, id, name, age, history);
+
+    return root;
+}
+
+Patient* search(Patient* root, int id) {
+    if (root == nullptr || root->patientID == id) return root;
+
+    if (id < root->patientID) return search(root->left, id);
+    return search(root->right, id);
+}
+
+void updateHistory(Patient* root, int id, string newHistory) {
+    Patient* patient = search(root, id);
+    if (patient) {
+        patient->medicalHistory = newHistory;
+        cout << "Medical history updated!\n";
+    } else {
+        cout << "Patient not found!\n";
+    }
+}
+
+void researchCohort(Patient* root, int minAge, int maxAge) {
+    if (root == nullptr) return;
+
+    researchCohort(root->left, minAge, maxAge);
+
+    if (root->age >= minAge && root->age <= maxAge) {
+        cout << "ID: " << root->patientID << ", Name: " << root->name 
+             << ", Age: " << root->age << ", History: " << root->medicalHistory << endl;
+    }
+
+    researchCohort(root->right, minAge, maxAge);
+}
+
+Patient* findMin(Patient* root) {
+    while (root && root->left != nullptr) root = root->left;
+    return root;
+}
+
+Patient* deletePatient(Patient* root, int id) {
+    if (root == nullptr) return root;
+
+    if (id < root->patientID)
+        root->left = deletePatient(root->left, id);
+    else if (id > root->patientID)
+        root->right = deletePatient(root->right, id);
+    else {
+        if (root->left == nullptr) {
+            Patient* temp = root->right;
+            delete root;
+            return temp;
+        } else if (root->right == nullptr) {
+            Patient* temp = root->left;
+            delete root;
+            return temp;
+        }
+        Patient* temp = findMin(root->right);
+        root->patientID = temp->patientID;
+        root->name = temp->name;
+        root->age = temp->age;
+        root->medicalHistory = temp->medicalHistory;
+        root->right = deletePatient(root->right, temp->patientID);
+    }
+    return root;
+}
+
+void display(Patient* patient) {
+    if (patient) {
+        cout << "ID: " << patient->patientID << "\nName: " << patient->name
+             << "\nAge: " << patient->age
+             << "\nMedical History: " << patient->medicalHistory << endl;
+    } else {
+        cout << "Patient not found!\n";
+    }
+}
+
+int main() {
+    Patient* root = nullptr;
+    int choice, id, age, minAge, maxAge;
+    string name, history;
+
+    while (true) {
+        cout << "\n--- Medical Patient Record System ---\n";
+        cout << "1. Register New Patient\n2. Access Patient Record\n3. Update Medical History\n";
+        cout << "4. Research Study Cohort\n5. Discharge Patient\n6. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
+        switch (choice) {
+        case 1:
+            cout << "Enter ID, Name, Age, Medical History: ";
+            cin >> id >> name >> age >> history;
+            root = insert(root, id, name, age, history);
+            break;
+        case 2:
+            cout << "Enter Patient ID: ";
+            cin >> id;
+            display(search(root, id));
+            break;
+        case 3:
+            cout << "Enter Patient ID and new Medical History: ";
+            cin >> id >> history;
+            updateHistory(root, id, history);
+            break;
+        case 4:
+            cout << "Enter age range (min max): ";
+            cin >> minAge >> maxAge;
+            researchCohort(root, minAge, maxAge);
+            break;
+        case 5:
+            cout << "Enter Patient ID to discharge: ";
+            cin >> id;
+            root = deletePatient(root, id);
+            cout << "Patient discharged!\n";
+            break;
+        case 6:
+            return 0;
+        default:
+            cout << "Invalid choice!\n";
+        }
+    }
+}
