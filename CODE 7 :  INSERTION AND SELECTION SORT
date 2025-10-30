@@ -1,0 +1,73 @@
+#include <iostream>
+using namespace std;
+
+struct Movie {
+    int id;
+    string name;
+    int popularity;
+    int releaseDate;
+};
+
+void insertionSortPopularity(Movie movies[], int n) {
+    for (int i = 1; i < n; i++) {
+        Movie temp = movies[i];
+        int j = i - 1;
+        while (j >= 0 && movies[j].popularity < temp.popularity) {
+            movies[j + 1] = movies[j];
+            j--;
+        }
+        movies[j + 1] = temp;
+    }
+}
+
+void selectionSortReleaseDate(Movie movies[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        int minIndex = i;
+        for (int j = i + 1; j < n; j++) {
+            if (movies[j].releaseDate < movies[minIndex].releaseDate) {
+                minIndex = j;
+            }
+        }
+        Movie temp = movies[minIndex];
+        movies[minIndex] = movies[i];
+        movies[i] = temp;
+    }
+}
+
+void printMovies(Movie movies[], int n) {
+    for (int i = 0; i < n; i++) {
+        cout << movies[i].id << " " << movies[i].name << endl;
+        cout << "Popularity: " << movies[i].popularity << endl;
+        cout << "Release Date: " << movies[i].releaseDate << endl;
+        cout << endl;
+    }
+}
+
+int main() {
+    int n;
+    cout << "How many movies? ";
+    cin >> n;
+
+    Movie movies[10];  
+    for (int i = 0; i < n; i++) {
+        cout << "Enter ID: ";
+        cin >> movies[i].id;
+        cout << "Enter name: ";
+        cin.ignore();  // clear input buffer
+        getline(cin, movies[i].name);
+        cout << "Enter popularity: ";
+        cin >> movies[i].popularity;
+        cout << "Enter release date (YYYYMMDD): ";
+        cin >> movies[i].releaseDate;
+    }
+
+    insertionSortPopularity(movies, n);
+    cout << "\nSorted by popularity:\n";
+    printMovies(movies, n);
+
+    selectionSortReleaseDate(movies, n);
+    cout << "\nSorted by release date:\n";
+    printMovies(movies, n);
+
+    return 0;
+}
