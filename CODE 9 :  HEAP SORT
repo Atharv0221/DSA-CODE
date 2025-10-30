@@ -1,0 +1,72 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Hashtag {
+    string tag;
+    int frequency;
+};
+
+void heapify(Hashtag arr[], int n, int i) {
+    int largest = i;      
+    int left = 2 * i + 1; 
+    int right = 2 * i + 2; 
+
+    if (left < n && arr[left].frequency > arr[largest].frequency)
+        largest = left;
+
+    if (right < n && arr[right].frequency > arr[largest].frequency)
+        largest = right;
+
+    if (largest != i) {
+        swap(arr[i], arr[largest]);
+        heapify(arr, n, largest);
+    }
+}
+
+void heapSort(Hashtag arr[], int n) {
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(arr, n, i);
+
+    for (int i = n - 1; i > 0; i--) {
+        swap(arr[0], arr[i]);   
+        heapify(arr, i, 0);     
+    }
+}
+
+// ---------- DISPLAY FUNCTION ----------
+void displayTopHashtags(Hashtag arr[], int n, int k) {
+    cout << "\nTop " << k << " Trending Hashtags:\n";
+    cout << "---------------------------------\n";
+    cout << "Hashtag\t\tFrequency\n";
+    cout << "---------------------------------\n";
+
+    int start = (n - k < 0) ? 0 : n - k;
+    for (int i = n - 1; i >= start; i--) {
+        cout << arr[i].tag << "\t\t" << arr[i].frequency << endl;
+    }
+}
+
+int main() {
+    int n;
+    cout << "Enter total number of hashtags: ";
+    cin >> n;
+
+    Hashtag hashtags[100]; 
+
+    
+    for (int i = 0; i < n; i++) {
+        cout << "\nEnter details for Hashtag " << i + 1 << ":\n";
+        cout << "Hashtag (without #): ";
+        cin >> hashtags[i].tag;
+        cout << "Frequency of usage: ";
+        cin >> hashtags[i].frequency;
+    }
+
+    heapSort(hashtags, n);
+
+    int k = (n < 5) ? n : 5;
+    displayTopHashtags(hashtags, n, k);
+
+    return 0;
+}
