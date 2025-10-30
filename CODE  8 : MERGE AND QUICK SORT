@@ -1,0 +1,106 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+struct Stock {
+    int stock_ID;
+    string stock_Name;
+    float stock_Price;
+};
+
+int partitionByName(Stock stocks[], int low, int high) {
+    string pivot = stocks[high].stock_Name;
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (stocks[j].stock_Name < pivot) {
+            i++;
+            swap(stocks[i], stocks[j]);
+        }
+    }
+    swap(stocks[i + 1], stocks[high]);
+    return i + 1;
+}
+
+void quickSortByName(Stock stocks[], int low, int high) {
+    if (low < high) {
+        int pi = partitionByName(stocks, low, high);
+        quickSortByName(stocks, low, pi - 1);
+        quickSortByName(stocks, pi + 1, high);
+    }
+}
+
+void merge(Stock stocks[], int left, int mid, int right) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Stock* L = new Stock[n1];
+    Stock* R = new Stock[n2];
+
+    for (int i = 0; i < n1; i++)
+        L[i] = stocks[left + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = stocks[mid + 1 + j];
+
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (L[i].stock_Price >= R[j].stock_Price) {
+            stocks[k++] = L[i++];
+        } else {
+            stocks[k++] = R[j++];
+        }
+    }
+
+    while (i < n1) stocks[k++] = L[i++];
+    while (j < n2) stocks[k++] = R[j++];
+
+    delete[] L;
+    delete[] R;
+}
+
+void mergeSortByPrice(Stock stocks[], int left, int right) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+        mergeSortByPrice(stocks, left, mid);
+        mergeSortByPrice(stocks, mid + 1, right);
+        merge(stocks, left, mid, right);
+    }
+}
+
+void displayStocks(Stock stocks[], int n) {
+    cout << "\nStock_ID\tStock_Name\tStock_Price\n";
+    cout << "-------------------------------------------\n";
+    for (int i = 0; i < n; i++) {
+        cout << stocks[i].stock_ID << "\t\t"
+             << stocks[i].stock_Name << "\t\t"
+             << stocks[i].stock_Price << endl;
+    }
+}
+
+int main() {
+    int n;
+    cout << "Enter number of stocks: ";
+    cin >> n;
+
+    Stock stocks[100]; 
+
+    for (int i = 0; i < n; i++) {
+        cout << "\nEnter details for stock " << i + 1 << ":\n";
+        cout << "Stock ID: ";
+        cin >> stocks[i].stock_ID;
+        cout << "Stock Name: ";
+        cin >> stocks[i].stock_Name;
+        cout << "Stock Price: ";
+        cin >> stocks[i].stock_Price;
+    }
+
+    cout << "\n--- Sorting by Name (Quick Sort) ---";
+    quickSortByName(stocks, 0, n - 1);
+    displayStocks(stocks, n);
+
+    cout << "\n--- Sorting by Price Descending (Merge Sort) ---";
+    mergeSortByPrice(stocks, 0, n - 1);
+    displayStocks(stocks, n);
+
+    return 0;
+}
