@@ -1,0 +1,107 @@
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+struct Station {
+    int id;
+    string name;
+    string metro_line;
+    bool is_transfer_station;
+    int daily_ridership;
+    int daily_revenue;
+};
+
+int main() {
+    int n;
+    cout << "Enter number of metro stations: ";
+    cin >> n;
+
+    vector<Station> stations(n);
+
+    for (int i = 0; i < n; i++) {
+        cout << "Enter details for Station " << i + 1 << ":\n";
+
+        cout << "ID: ";
+        cin >> stations[i].id;
+        cin.ignore();
+
+        cout << "Name: ";
+        getline(cin, stations[i].name);
+
+        cout << "Metro Line (Elevated/Underground): ";
+        getline(cin, stations[i].metro_line);
+
+        cout << "Is Transfer Station (1 = Yes, 0 = No): ";
+        cin >> stations[i].is_transfer_station;
+
+        cout << "Daily Ridership: ";
+        cin >> stations[i].daily_ridership;
+
+        cout << "Daily Revenue: ";
+        cin >> stations[i].daily_revenue;
+
+        cout << endl;
+    }
+
+    int maxRevenue = stations[0].daily_revenue;
+    string maxRevenueStation = stations[0].name;
+
+    int maxRiders = stations[0].daily_ridership;
+    string maxRiderStation = stations[0].name;
+
+    int minRiders = stations[0].daily_ridership;
+    string minRiderStation = stations[0].name;
+
+    vector<string> elevatedStations;
+    vector<string> undergroundStations;
+
+    for (int i = 0; i < n; i++) {
+        if (stations[i].daily_revenue > maxRevenue) {
+            maxRevenue = stations[i].daily_revenue;
+            maxRevenueStation = stations[i].name;
+        }
+
+        if (stations[i].daily_ridership > maxRiders) {
+            maxRiders = stations[i].daily_ridership;
+            maxRiderStation = stations[i].name;
+        }
+
+        if (stations[i].daily_ridership < minRiders) {
+            minRiders = stations[i].daily_ridership;
+            minRiderStation = stations[i].name;
+        }
+
+        if (stations[i].metro_line == "Elevated") {
+            elevatedStations.push_back(stations[i].name);
+        }
+
+        if (stations[i].metro_line == "Underground") {
+            undergroundStations.push_back(stations[i].name);
+        }
+    }
+
+    cout << endl;
+    cout << "Station with Maximum Revenue: " << maxRevenueStation << endl;
+    cout << "Revenue: " << maxRevenue << endl;
+
+    cout << "Station with Maximum Ridership: " << maxRiderStation << endl;
+    cout << "Ridership: " << maxRiders << endl;
+
+    cout << "Station with Minimum Ridership: " << minRiderStation << endl;
+    cout << "Ridership: " << minRiders << endl;
+
+    cout << endl;
+    cout << "Elevated Stations:" << endl;
+    for (int i = 0; i < elevatedStations.size(); i++) {
+        cout << elevatedStations[i] << endl;
+    }
+
+    cout << endl;
+    cout << "Underground Stations:" << endl;
+    for (int i = 0; i < undergroundStations.size(); i++) {
+        cout << undergroundStations[i] << endl;
+    }
+
+    return 0;
+}
