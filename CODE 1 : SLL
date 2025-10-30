@@ -1,0 +1,173 @@
+#include <iostream>
+#include <string>
+using namespace std;
+
+class Image {
+public:
+    int imageID;
+    string filename;
+    string resolution;
+    string tag;
+    Image* next;
+
+    Image(int id, string fname, string res, string t) {
+        imageID = id;
+        filename = fname;
+        resolution = res;
+        tag = t;
+        next = nullptr;
+    }
+};
+
+class ImageGallery {
+private:
+    Image* head;
+    Image* current;
+
+public:
+    ImageGallery() {
+        head = nullptr;
+        current = nullptr;
+    }
+
+    void addImage(int id, string filename, string resolution, string tag) {
+        Image* newImage = new Image(id, filename, resolution, tag);
+        if (!head) {
+            head = newImage;
+            current = head;
+        } else {
+            Image* temp = head;
+            while (temp->next) {
+                temp = temp->next;
+            }
+            temp->next = newImage;
+        }
+        cout << "Image added successfully.\n";
+    }
+
+    void deleteImage(int id) {
+        if (!head) {
+            cout << "Gallery is empty.\n";
+            return;
+        }
+
+        if (head->imageID == id) {
+            Image* toDelete = head;
+            head = head->next;
+            if (current == toDelete)
+                current = head;
+            delete toDelete;
+            cout << "Image with ID " << id << " deleted.\n";
+            return;
+        }
+
+        Image* temp = head;
+        while (temp->next && temp->next->imageID != id) {
+            temp = temp->next;
+        }
+
+        if (temp->next) {
+            Image* toDelete = temp->next;
+            temp->next = toDelete->next;
+            if (current == toDelete)
+                current = head;
+            delete toDelete;
+            cout << "Image with ID " << id << " deleted.\n";
+        } else {
+            cout << "Image with ID " << id << " not found.\n";
+        }
+    }
+
+    void viewAllImages() {
+        if (!head) {
+            cout << "Gallery is empty.\n";
+            return;
+        }
+
+        Image* temp = head;
+        cout << "\n--- Image Gallery ---\n";
+        while (temp) {
+            cout << "Image ID: " << temp->imageID << endl;
+            cout << "Filename: " << temp->filename << endl;
+            cout << "Resolution: " << temp->resolution << endl;
+            cout << "Tag: " << temp->tag << endl;
+            cout << "--------------------------\n";
+            temp = temp->next;
+        }
+    }
+
+    void nextImage() {
+        if (!current) {
+            cout << "Gallery is empty.\n";
+            return;
+        }
+
+        cout << "\n--- Current Image ---\n";
+        cout << "Image ID: " << current->imageID << endl;
+        cout << "Filename: " << current->filename << endl;
+        cout << "Resolution: " << current->resolution << endl;
+        cout << "Tag: " << current->tag << endl;
+        cout << "----------------------\n";
+
+        current = current->next ? current->next : head;
+    }
+
+    ~ImageGallery() {
+        Image* temp = head;
+        while (temp) {
+            Image* next = temp->next;
+            delete temp;
+            temp = next;
+        }
+    }
+};
+
+int main() {
+    ImageGallery gallery;
+    int choice, id;
+    string filename, resolution, tag;
+
+    do {
+        cout << "\n--- Image Gallery Menu ---\n";
+        cout << "1. Add Image\n";
+        cout << "2. Delete Image\n";
+        cout << "3. View All Images\n";
+        cout << "4. Next Image\n";
+        cout << "5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+        case 1:
+            cout << "Enter Image ID: ";
+            cin >> id;
+            cout << "Enter Filename: ";
+            cin >> filename;
+            cout << "Enter Resolution: ";
+            cin >> resolution;
+            cout << "Enter Tag: ";
+            cin >> tag;
+            gallery.addImage(id, filename, resolution, tag);
+            break;
+        case 2:
+            cout << "Enter Image ID to delete: ";
+            cin >> id;
+            gallery.deleteImage(id);
+            break;
+        case 3:
+            gallery.viewAllImages();
+            break;
+        case 4:
+            gallery.nextImage();
+            break;
+        case 5:
+            cout << "Exiting.\n";
+            break;
+        default:
+            cout << "Invalid choice.\n";
+        }
+
+    } while (choice != 5);
+
+    return 0;
+}
