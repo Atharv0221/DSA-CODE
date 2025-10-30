@@ -1,0 +1,125 @@
+#include<iostream>
+#include<string>
+using namespace std;
+
+const int MAX_SIZE = 5;
+struct Ticket {
+    int ticketNumber;
+    string customerName;
+    string issueDescription;
+};
+
+class CircularQueue {
+private:
+    Ticket queue[MAX_SIZE];
+    int front;
+    int rear;
+    int count;
+public:
+    CircularQueue() : front(0), rear(-1), count(0){}
+    
+    bool isFull(){
+        return count == MAX_SIZE;
+    }
+    bool isEmpty(){
+        return count == 0;
+    }
+    
+    void enqueue(Ticket t){
+        if(isFull()){
+            cout<<"Queue is Full,Cannot add new Ticket"<<endl;
+            return;
+        }
+        
+        rear = (rear+1) % MAX_SIZE;
+        queue[rear]=t;
+        count++;
+        cout<<"Ticket submitted successfully"<<endl;
+    }
+    
+    void dequeue(){
+        if (isEmpty()){
+            cout<<"Queue is empty, No tickets to resolve."<<endl;
+            return;
+        }
+            cout<<"Resolving Ticket: "<<queue[front].ticketNumber<<" for "<<queue[front].customerName<<endl;
+            cout<<"Issue: "<<queue[front].issueDescription<<endl;
+            front = (front+1) % MAX_SIZE;
+            count--;
+            cout<<"Ticket resolved successfully."<<endl;
+            cout<<"After dequeue front"<<front<<", count="<<count<<endl;
+            return;
+        
+    }
+    void peek() {
+        if(isEmpty()){
+            cout<<"Queue is empty. No tickets to show."<<endl;
+            return;
+        }
+        cout<<"Next ticket to resolve: "<<endl;
+        cout<<"Ticket No"<<queue[front].ticketNumber<<endl;
+        cout<<"Customer: "<<queue[front].customerName<<endl;
+        cout<<"Issue: "<<queue[front].issueDescription<<endl;
+    }
+    
+    void displayStatus(){
+        cout<<"Total tickets in queue: "<<count<<endl;
+        if(isEmpty()){
+            cout<<"The queue is empty"<<endl;
+            return;
+        }
+        cout<<"Ticketin queue: "<<endl;
+        int i =front;
+        for(int c=0;c<count;c++) {
+            cout<<"Ticket No: "<<queue[i].ticketNumber<<", Customer: "<<queue[i].customerName<<", Issue: "<<queue[i].issueDescription<<endl;
+            i=(i+1)%MAX_SIZE;
+        }
+    }
+};
+
+int main(){
+    CircularQueue supportQueue;
+    int choice;
+    int ticketCounter = 1;
+    
+    do {
+        cout<<"\nCustomer Support System Menu: \n";
+        cout<<"1. Submit Ticket (Enqueue)\n";
+        cout<<"2. Resolve Ticket (Dequeue)\n";
+        cout<<"3. Check Next Ticket (peek)\n";
+        cout<<"4. Display Queue Status\n";
+        cout<<"5. Exit\n";
+        cout<<"Enter your Choice: ";
+        cin>>choice;
+        
+        switch(choice) {
+            case 1: {
+                cin.ignore();
+                Ticket t;
+                t.ticketNumber = ticketCounter++;
+                cout<<"Enter Customer name: ";
+                getline(cin, t.customerName);
+                cout<<"Enter issue description: ";
+                getline(cin, t.issueDescription);
+                supportQueue.enqueue(t);
+                break;
+            }
+            case 2:
+                supportQueue.dequeue();
+                break;
+            case 3:
+                supportQueue.peek();
+                break;
+            case 4:
+                supportQueue.displayStatus();
+                break;
+            case 5:
+                cout<<"Existing program"<<endl;
+                break;
+            default:
+            cout<<"Invalid choice!!"<<endl;
+        }
+    }while(choice !=5);
+    
+    return 0;
+}
