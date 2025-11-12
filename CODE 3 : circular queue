@@ -10,17 +10,16 @@ struct Ticket {
     string issueDescription;
 };
 
-// Circular queue variables
 Ticket queue[MAX_SIZE];
-int front = -1, rear = -1, size = 0;
+int front = -1, rear = -1, queue_size = 0;
 int ticketCounter = 1;
 
 bool isEmpty() {
-    return size == 0;
+    return queue_size == 0;
 }
 
 bool isFull() {
-    return size == MAX_SIZE;
+    return queue_size == MAX_SIZE;
 }
 
 void submitTicket() {
@@ -34,14 +33,14 @@ void submitTicket() {
     getline(cin, t.customerName);
     cout << "Enter issue description: ";
     getline(cin, t.issueDescription);
-    
+
     if (isEmpty()) {
         front = rear = 0;
     } else {
         rear = (rear + 1) % MAX_SIZE;
     }
     queue[rear] = t;
-    size++;
+    queue_size++;
     cout << "Ticket submitted successfully. Ticket Number: " << t.ticketNumber << endl;
 }
 
@@ -55,8 +54,8 @@ void resolveTicket() {
          << "Customer: " << t.customerName << "\n"
          << "Issue: " << t.issueDescription << endl;
     front = (front + 1) % MAX_SIZE;
-    size--;
-    if (size == 0) {
+    queue_size--;
+    if (queue_size == 0) {
         front = rear = -1;
     }
 }
@@ -73,13 +72,12 @@ void checkNextTicket() {
 }
 
 void displayStatus() {
-    cout << "Open tickets in queue: " << size << endl;
+    cout << "Open tickets in queue: " << queue_size << endl;
     cout << (isEmpty() ? "The queue is empty.\n" : "The queue is not empty.\n");
 }
 
 int main() {
     int choice;
-    string dummy;
     do {
         cout << "\nCustomer Support System - Circular Queue\n";
         cout << "1. Submit Ticket (Enqueue)\n";
@@ -89,8 +87,7 @@ int main() {
         cout << "5. Exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
-        getline(cin, dummy); // To clear the buffer
-
+        cin.ignore();
         switch (choice) {
         case 1:
             submitTicket();
