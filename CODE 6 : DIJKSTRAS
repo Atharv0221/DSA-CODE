@@ -1,167 +1,118 @@
 #include <iostream>
-#include <vector>
-#include <queue>
 #include <climits>
-
 using namespace std;
 
-struct Edge {
-	int destination;
-	int weight;
-};
+#define MAX 20     // Maximum number of locations
+#define INF INT_MAX
 
 class LogisticsNetwork {
 private:
-	int numNodes;
-	vector<vector<Edge>> graph;
+    int numNodes;
+    int graph[MAX][MAX];
 
 public:
-	LogisticsNetwork(int nodes) {
-    	numNodes = nodes;
-    	graph.resize(numNodes);
-	}
+    LogisticsNetwork(int nodes) {
+        numNodes = nodes;
+        // Initialize graph matrix
+        for (int i = 0; i < numNodes; ++i)
+            for (int j = 0; j < numNodes; ++j)
+                graph[i][j] = INF;
+    }
 
-	void addRoute(int from, int to, int weight) {
-    	graph[from].push_back({to, weight});
+    void addRoute(int from, int to, int weight) {
+        graph[from][to] = weight;
+    }
 
-	}
+    void displayGraph() {
+        cout << "\nDelivery Routes (Adjacency Matrix):\n";
+        for (int i = 0; i < numNodes; ++i) {
+            for (int j = 0; j < numNodes; ++j) {
+                if (graph[i][j] == INF)
+                    cout << "∞ ";
+                else
+                    cout << graph[i][j] << " ";
+            }
+            cout << endl;
+        }
+    }
 
-	void displayGraph() {
-    	cout << "\nDelivery Routes (Adjacency List):\n";
-    	for (int i = 0; i < numNodes; ++i) {
-        	cout << "Location " << i << " -> ";
-        	for (auto edge : graph[i]) {
-            	cout << "(To: " << edge.destination << ", Weight: " << edge.weight << ") ";
-        	}
-        	cout << endl;
-    	}
-	}
+    void dijkstra(int source) {
+        int dist[MAX], visited[MAX];
+        for (int i = 0; i < numNodes; ++i) {
+            dist[i] = INF;
+            visited[i] = 0;
+        }
 
-	void dijkstra(int source) {
-    	vector<int> dist(numNodes, INT_MAX);
-    	dist[source] = 0;
+        dist[source] = 0;
 
-    	priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int,int>>> pq;
-    	pq.push({0, source});
+        for (int count = 0; count < numNodes - 1; ++count) {
+            // Find node with minimum distance
+            int u = -1, minDist = INF;
+            for (int i = 0; i < numNodes; ++i) {
+                if (!visited[i] && dist[i] < minDist) {
+                    minDist = dist[i];
+                    u = i;
+                }
+            }
 
-    	while (!pq.empty()) {
-        	int u = pq.top().second;
-        	int currDist = pq.top().first;
-        	pq.pop();
+            if (u == -1) break;
+            visited[u] = 1;
 
+            // Relax edges
+            for (int v = 0; v < numNodes; ++v) {
+                if (!visited[v] && graph[u][v] != INF && dist[u] + graph[u][v] < dist[v]) {
+                    dist[v] = dist[u] + graph[u][v];
+                }
+            }
+        }
 
-        	if (currDist > dist[u])
-            	continue;
-
-        	for (auto edge : graph[u]) {
-            	int v = edge.destination;
-            	int weight = edge.weight;
-
-            	if (dist[u] != INT_MAX && dist[u] + weight < dist[v]) {
-                	dist[v] = dist[u] + weight;
-                	pq.push({dist[v], v});
-            	}
-        	}
-    	}
-
-    	cout << "\nShortest paths from Warehouse (Node " << source << "):\n";
-    	for (int i = 0; i < numNodes; ++i) {
-        	if (dist[i] == INT_MAX)
-            	cout << "Retail Location " << i << ": Not reachable\n";
-        	else
-            	cout << "Retail Location " << i << ": " << dist[i] << "\n";
-    	}
-	}
+        cout << "\nShortest Paths from Warehouse (Node " << source << "):\n";
+        for (int i = 0; i < numNodes; ++i) {
+            if (dist[i] == INF)
+                cout << "Retail Location " << i << ": Not reachable\n";
+            else
+                cout << "Retail Location " << i << ": " << dist[i] << endl;
+        }
+    }
 };
 
 int main() {
-	int nodes;
+    int nodes;
+    cout << "Enter number of locations (warehouse + outlets): ";
+    cin >> nodes;
 
-	cout << "Enter total number of locations (warehouse + retail outlets): ";
-	while (!(cin >> nodes) || nodes <= 0) {
-    	cout << "Invalid number of locations! Please enter a positive integer: ";
-    	cin.clear();
-    	cin.ignore(10000, '\n');
-	}
+    LogisticsNetwork net(nodes);
 
-	LogisticsNetwork network(nodes);
+    int choice;
+    do {
+        cout << "\n--- Logistics & Supply Chain Menu ---\n";
+        cout << "1. Add Delivery Route\n";
+        cout << "2. Display Routes\n";
+        cout << "3. Compute Shortest Paths (Dijkstra)\n";
+        cout << "4. Exit\n";
+        cout << "Enter choice: ";
+        cin >> choice;
 
-	int choice;
-	do {
-    	cout << "\n--- Logistics & Supply Chain Menu ---\n";
-    	cout << "1. Add Delivery Route\n";
-    	cout << "2. Display Routes\n";
-    	cout << "3. Compute Shortest Paths (Dijkstra)\n";
-    	cout << "4. Exit\n";
-    	cout << "Enter your choice: ";
+        switch (choice) {
+            case 1: {
+                int from, to, w;
+                cout << "Enter source, destination, and distance: ";
+                cin >> from >> to >> w;
+                net.addRoute(from, to, w);
+                break;
+            }
+            case 2:
+                net.displayGraph();
+                break;
+            case 3: {
+                int src;
+                cout << "Enter starting warehouse node: ";
+                cin >> src;
+                net.dijkstra(src);
+                break;
+            }
+        }
+    } while (choice != 4);
 
-    	if (!(cin >> choice)) {
-        	cout << "Invalid input! Please enter a number.\n";
-        	cin.clear();
-        	cin.ignore(10000, '\n');
-        	continue;
-    	}
-
-    	switch (choice) {
-        	case 1: {
-            	int from, to, weight;
-
-            	cout << "Enter source (from): ";
-            	if (!(cin >> from) || from < 0 || from >= nodes) {
-                	cout << "Invalid source node! Must be between 0 and " << nodes - 1 << ".\n";
-                	cin.clear();
-                	cin.ignore(10000, '\n');
-                	break;
-            	}
-
-            	cout << "Enter destination (to): ";
-            	if (!(cin >> to) || to < 0 || to >= nodes) {
-                	cout << "Invalid destination node! Must be between 0 and " << nodes - 1 << ".\n";
-                	cin.clear();
-                	cin.ignore(10000, '\n');
-                	break;
-            	}
-
-            	cout << "Enter weight distance): ";
-            	if (!(cin >> weight) || weight < 0) {
-                	cout << "Invalid weight! Must be a non-negative integer.\n";
-                	cin.clear();
-                	cin.ignore(10000, '\n');
-                	break;
-            	}
-
-            	network.addRoute(from, to, weight);
-            	cout << "Route added successfully.\n";
-            	break;
-        	}
-
-        	case 2:
-            	network.displayGraph();
-            	break;
-
-        	case 3: {
-            	int source;
-            	cout << "Enter starting node (Warehouse index): ";
-            	if (!(cin >> source) || source < 0 || source >= nodes) {
-                	cout << "Invalid source node! Must be between 0 and " << nodes - 1 << ".\n";
-                	cin.clear();
-                	cin.ignore(10000, '\n');
-                	break;
-            	}
-
-            	network.dijkstra(source);
-            	break;
-        	}
-
-        	case 4:
-            	cout << "Exiting program...\n";
-            	break;
-
-        	default:
-            	cout << "Invalid choice!\n";
-    	}
-	} while (choice != 4);
-
-	return 0;
+    return 0;
 }
-
