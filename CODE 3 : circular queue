@@ -1,125 +1,116 @@
-#include<iostream>
-#include<string>
+#include <iostream>
+#include <string>
 using namespace std;
 
 const int MAX_SIZE = 5;
+
 struct Ticket {
     int ticketNumber;
     string customerName;
     string issueDescription;
 };
 
-class CircularQueue {
-private:
-    Ticket queue[MAX_SIZE];
-    int front;
-    int rear;
-    int count;
-public:
-    CircularQueue() : front(0), rear(-1), count(0){}
-    
-    bool isFull(){
-        return count == MAX_SIZE;
-    }
-    bool isEmpty(){
-        return count == 0;
-    }
-    
-    void enqueue(Ticket t){
-        if(isFull()){
-            cout<<"Queue is Full,Cannot add new Ticket"<<endl;
-            return;
-        }
-        
-        rear = (rear+1) % MAX_SIZE;
-        queue[rear]=t;
-        count++;
-        cout<<"Ticket submitted successfully"<<endl;
-    }
-    
-    void dequeue(){
-        if (isEmpty()){
-            cout<<"Queue is empty, No tickets to resolve."<<endl;
-            return;
-        }
-            cout<<"Resolving Ticket: "<<queue[front].ticketNumber<<" for "<<queue[front].customerName<<endl;
-            cout<<"Issue: "<<queue[front].issueDescription<<endl;
-            front = (front+1) % MAX_SIZE;
-            count--;
-            cout<<"Ticket resolved successfully."<<endl;
-            cout<<"After dequeue front"<<front<<", count="<<count<<endl;
-            return;
-        
-    }
-    void peek() {
-        if(isEmpty()){
-            cout<<"Queue is empty. No tickets to show."<<endl;
-            return;
-        }
-        cout<<"Next ticket to resolve: "<<endl;
-        cout<<"Ticket No"<<queue[front].ticketNumber<<endl;
-        cout<<"Customer: "<<queue[front].customerName<<endl;
-        cout<<"Issue: "<<queue[front].issueDescription<<endl;
-    }
-    
-    void displayStatus(){
-        cout<<"Total tickets in queue: "<<count<<endl;
-        if(isEmpty()){
-            cout<<"The queue is empty"<<endl;
-            return;
-        }
-        cout<<"Ticketin queue: "<<endl;
-        int i =front;
-        for(int c=0;c<count;c++) {
-            cout<<"Ticket No: "<<queue[i].ticketNumber<<", Customer: "<<queue[i].customerName<<", Issue: "<<queue[i].issueDescription<<endl;
-            i=(i+1)%MAX_SIZE;
-        }
-    }
-};
+// Circular queue variables
+Ticket queue[MAX_SIZE];
+int front = -1, rear = -1, size = 0;
+int ticketCounter = 1;
 
-int main(){
-    CircularQueue supportQueue;
+bool isEmpty() {
+    return size == 0;
+}
+
+bool isFull() {
+    return size == MAX_SIZE;
+}
+
+void submitTicket() {
+    if (isFull()) {
+        cout << "Queue is full. Cannot add more tickets.\n";
+        return;
+    }
+    Ticket t;
+    t.ticketNumber = ticketCounter++;
+    cout << "Enter customer name: ";
+    getline(cin, t.customerName);
+    cout << "Enter issue description: ";
+    getline(cin, t.issueDescription);
+    
+    if (isEmpty()) {
+        front = rear = 0;
+    } else {
+        rear = (rear + 1) % MAX_SIZE;
+    }
+    queue[rear] = t;
+    size++;
+    cout << "Ticket submitted successfully. Ticket Number: " << t.ticketNumber << endl;
+}
+
+void resolveTicket() {
+    if (isEmpty()) {
+        cout << "No tickets to resolve.\n";
+        return;
+    }
+    Ticket t = queue[front];
+    cout << "Resolving Ticket #" << t.ticketNumber << "\n"
+         << "Customer: " << t.customerName << "\n"
+         << "Issue: " << t.issueDescription << endl;
+    front = (front + 1) % MAX_SIZE;
+    size--;
+    if (size == 0) {
+        front = rear = -1;
+    }
+}
+
+void checkNextTicket() {
+    if (isEmpty()) {
+        cout << "No tickets to show.\n";
+        return;
+    }
+    Ticket t = queue[front];
+    cout << "Next Ticket #" << t.ticketNumber << "\n"
+         << "Customer: " << t.customerName << "\n"
+         << "Issue: " << t.issueDescription << endl;
+}
+
+void displayStatus() {
+    cout << "Open tickets in queue: " << size << endl;
+    cout << (isEmpty() ? "The queue is empty.\n" : "The queue is not empty.\n");
+}
+
+int main() {
     int choice;
-    int ticketCounter = 1;
-    
+    string dummy;
     do {
-        cout<<"\nCustomer Support System Menu: \n";
-        cout<<"1. Submit Ticket (Enqueue)\n";
-        cout<<"2. Resolve Ticket (Dequeue)\n";
-        cout<<"3. Check Next Ticket (peek)\n";
-        cout<<"4. Display Queue Status\n";
-        cout<<"5. Exit\n";
-        cout<<"Enter your Choice: ";
-        cin>>choice;
-        
-        switch(choice) {
-            case 1: {
-                cin.ignore();
-                Ticket t;
-                t.ticketNumber = ticketCounter++;
-                cout<<"Enter Customer name: ";
-                getline(cin, t.customerName);
-                cout<<"Enter issue description: ";
-                getline(cin, t.issueDescription);
-                supportQueue.enqueue(t);
-                break;
-            }
-            case 2:
-                supportQueue.dequeue();
-                break;
-            case 3:
-                supportQueue.peek();
-                break;
-            case 4:
-                supportQueue.displayStatus();
-                break;
-            case 5:
-                cout<<"Existing program"<<endl;
-                break;
-            default:
-            cout<<"Invalid choice!!"<<endl;
+        cout << "\nCustomer Support System - Circular Queue\n";
+        cout << "1. Submit Ticket (Enqueue)\n";
+        cout << "2. Resolve Ticket (Dequeue)\n";
+        cout << "3. Check Next Ticket (Peek)\n";
+        cout << "4. Display Queue Status (Size/Empty)\n";
+        cout << "5. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+        getline(cin, dummy); // To clear the buffer
+
+        switch (choice) {
+        case 1:
+            submitTicket();
+            break;
+        case 2:
+            resolveTicket();
+            break;
+        case 3:
+            checkNextTicket();
+            break;
+        case 4:
+            displayStatus();
+            break;
+        case 5:
+            cout << "Exiting...\n";
+            break;
+        default:
+            cout << "Invalid choice, try again.\n";
         }
-    }while(choice !=5);
-    
+    } while (choice != 5);
+
     return 0;
 }
