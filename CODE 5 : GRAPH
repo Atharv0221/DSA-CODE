@@ -1,107 +1,97 @@
 #include <iostream>
-#include <vector>
 #include <string>
 using namespace std;
 
-struct Station {
-    int id;
-    string name;
-    string metro_line;
-    bool is_transfer_station;
-    int daily_ridership;
-    int daily_revenue;
-};
+const int MAX = 10; // Max stations for simplicity
+
+// Station data arrays
+int ridership[MAX], revenue[MAX], is_transfer[MAX];
+string name[MAX], type[MAX];
+int adj[MAX][MAX]; // Adjacency matrix for connections
 
 int main() {
-    int n;
-    cout << "Enter number of metro stations: ";
+    int n, e;
+    cout << "Enter number of stations: ";
     cin >> n;
 
-    vector<Station> stations(n);
-
+    // Station data input
     for (int i = 0; i < n; i++) {
-        cout << "Enter details for Station " << i + 1 << ":\n";
-
-        cout << "ID: ";
-        cin >> stations[i].id;
+        cout << "Station " << i << " name: ";
         cin.ignore();
-
-        cout << "Name: ";
-        getline(cin, stations[i].name);
-
-        cout << "Metro Line (Elevated/Underground): ";
-        getline(cin, stations[i].metro_line);
-
-        cout << "Is Transfer Station (1 = Yes, 0 = No): ";
-        cin >> stations[i].is_transfer_station;
-
+        getline(cin, name[i]);
+        cout << "Type (Elevated/Underground): ";
+        getline(cin, type[i]);
+        cout << "Is Transfer Station? (1=Yes,0=No): ";
+        cin >> is_transfer[i];
         cout << "Daily Ridership: ";
-        cin >> stations[i].daily_ridership;
-
+        cin >> ridership[i];
         cout << "Daily Revenue: ";
-        cin >> stations[i].daily_revenue;
-
-        cout << endl;
+        cin >> revenue[i];
     }
 
-    int maxRevenue = stations[0].daily_revenue;
-    string maxRevenueStation = stations[0].name;
-
-    int maxRiders = stations[0].daily_ridership;
-    string maxRiderStation = stations[0].name;
-
-    int minRiders = stations[0].daily_ridership;
-    string minRiderStation = stations[0].name;
-
-    vector<string> elevatedStations;
-    vector<string> undergroundStations;
-
-    for (int i = 0; i < n; i++) {
-        if (stations[i].daily_revenue > maxRevenue) {
-            maxRevenue = stations[i].daily_revenue;
-            maxRevenueStation = stations[i].name;
-        }
-
-        if (stations[i].daily_ridership > maxRiders) {
-            maxRiders = stations[i].daily_ridership;
-            maxRiderStation = stations[i].name;
-        }
-
-        if (stations[i].daily_ridership < minRiders) {
-            minRiders = stations[i].daily_ridership;
-            minRiderStation = stations[i].name;
-        }
-
-        if (stations[i].metro_line == "Elevated") {
-            elevatedStations.push_back(stations[i].name);
-        }
-
-        if (stations[i].metro_line == "Underground") {
-            undergroundStations.push_back(stations[i].name);
-        }
+    // Connections input
+    cout << "Enter number of direct connections: ";
+    cin >> e;
+    for (int i = 0; i < e; i++) {
+        int u, v;
+        cout << "Enter two station ids for connection " << i+1 << ": ";
+        cin >> u >> v;
+        adj[u][v] = adj[v][u] = 1; // Undirected edge
     }
 
+    // Find max revenue, max/min ridership
+    int maxRevIdx = 0, maxRidIdx = 0, minRidIdx = 0;
+    for (int i = 1; i < n; i++) {
+        if (revenue[i] > revenue[maxRevIdx]) maxRevIdx = i;
+        if (ridership[i] > ridership[maxRidIdx]) maxRidIdx = i;
+        if (ridership[i] < ridership[minRidIdx]) minRidIdx = i;
+    }
+    cout << "Station with max revenue: " << name[maxRevIdx] << ", Rs." << revenue[maxRevIdx] << endl;
+    cout << "Station with max ridership: " << name[maxRidIdx] << ", " << ridership[maxRidIdx] << endl;
+    cout << "Station with min ridership: " << name[minRidIdx] << ", " << ridership[minRidIdx] << endl;
+
+    // Print stations by type
+    cout << "Elevated stations:\n";
+    for (int i = 0; i < n; i++)
+        if (type[i] == "Elevated")
+            cout << name[i] << endl;
+    cout << "Underground stations:\n";
+    for (int i = 0; i < n; i++)
+        if (type[i] == "Underground")
+            cout << name[i] << endl;
+
+    // Simple BFS implementation
+    int start;
+    cout << "Enter start station id for BFS traversal: ";
+    cin >> start;
+    int queue[MAX], front = 0, rear = 0, visited[MAX] = {0};
+    queue[rear++] = start; visited[start] = 1;
+    cout << "BFS: ";
+    while (front < rear) {
+        int u = queue[front++];
+        cout << name[u] << " ";
+        for (int v = 0; v < n; v++)
+            if (adj[u][v] && !visited[v]) {
+                queue[rear++] = v;
+                visited[v] = 1;
+            }
+    }
     cout << endl;
-    cout << "Station with Maximum Revenue: " << maxRevenueStation << endl;
-    cout << "Revenue: " << maxRevenue << endl;
 
-    cout << "Station with Maximum Ridership: " << maxRiderStation << endl;
-    cout << "Ridership: " << maxRiders << endl;
-
-    cout << "Station with Minimum Ridership: " << minRiderStation << endl;
-    cout << "Ridership: " << minRiders << endl;
-
-    cout << endl;
-    cout << "Elevated Stations:" << endl;
-    for (int i = 0; i < elevatedStations.size(); i++) {
-        cout << elevatedStations[i] << endl;
+    // Simple DFS implementation
+    for (int i = 0; i < n; i++) visited[i] = 0;
+    int stack[MAX], top = -1;
+    stack[++top] = start; visited[start] = 1;
+    cout << "DFS: ";
+    while (top >= 0) {
+        int u = stack[top--];
+        cout << name[u] << " ";
+        for (int v = 0; v < n; v++)
+            if (adj[u][v] && !visited[v]) {
+                stack[++top] = v;
+                visited[v] = 1;
+            }
     }
-
     cout << endl;
-    cout << "Underground Stations:" << endl;
-    for (int i = 0; i < undergroundStations.size(); i++) {
-        cout << undergroundStations[i] << endl;
-    }
-
     return 0;
 }
